@@ -65,5 +65,5 @@ func init() {
 	}
 	h := fnv.New32()
 	h.Write([]byte(hostname))
-	hostHash = h.Sum(nil)
+	hostHash = uint16ToBytes(uint16(h.Sum32()))
 }
