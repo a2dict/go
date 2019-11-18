@@ -2,10 +2,25 @@ package coll
 
 import (
 	"bytes"
+	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/a2dict/go/str"
 )
+
+type KVMapper func(k, v string) (kk, vv string)
+type BiStringMapper func(k, v string) string
+type KVSplitter func(string) (k, v string)
+
+var EqJoinedBiStringMapper BiStringMapper = func(k, v string) string { return fmt.Sprintf("%s=%s", k, v) }
+var EqJoinedKVSplitter KVSplitter = func(s string) (k, v string) {
+	sp := strings.SplitN(s, "=", 2)
+	if len(sp) == 2 {
+		return sp[0], sp[1]
+	}
+	return s, ""
+}
 
 // MapOf ...
 func MapOf(kvs ...string) map[string]string {
@@ -84,28 +99,58 @@ func PolluteMap(m map[string]string) map[string]interface{} {
 
 // Map2SortString ...
 func Map2SortString(m map[string]string) string {
-	return Map2SortString_(m, "=", "&", str.IdenticalMapper, str.IdenticalMapper, str.AllTrueFilter, str.AllTrueFilter)
-}
-
-// Map2SortString_ ...
-func Map2SortString_(m map[string]string, join, split string, keyMapper, valueMapper str.StringMapper, keyFilter, valueFilter str.StringFilter) string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
-	s := ""
+	prepend := ""
 	var buffer bytes.Buffer
 	for _, k := range keys {
 		v := m[k]
-		if valueFilter(v) && keyFilter(k) {
-			buffer.WriteString(s)
-			buffer.WriteString(keyMapper(k))
-			buffer.WriteString(join)
-			buffer.WriteString(valueMapper(v))
-			s = split
-		}
+		buffer.WriteString(prepend)
+		buffer.WriteString(k)
+		buffer.WriteString("=")
+		buffer.WriteString(v)
+		prepend = "&"
 	}
-	ss := buffer.String()
-	return ss
+	return buffer.String()
+}
+
+func TransMap2(m map[string]string, keyMapper str.StringMapper, valueMapper str.StringMapper) map[string]string {
+	res := make(map[string]string)
+	for k, v := range m {
+		kk := keyMapper(k)
+		vv := valueMapper(v)
+		res[kk] = vv
+	}
+	return res
+}
+
+func Map2StringSlice(m map[string]string, mp BiStringMapper) []string {
+	res := make([]string, 0, len(m))
+	for k, v := range m {
+		res = append(res, mp(k, v))
+	}
+	return res
+}
+
+func Map2UrlencodeString(m map[string]string) string {
+	return str.Join("&",
+		Map2StringSlice(
+			TransMap2(
+				m, str.Urlencoder, str.Urlencoder),
+			EqJoinedBiStringMapper)...)
+}
+
+func UrlencodeString2Map(s string) map[string]string {
+	res := make(map[string]string)
+	kvs := strings.Split(s, "&")
+	for _, kv := range kvs {
+		k, v := EqJoinedKVSplitter(kv)
+		kk := str.Urldecoder(k)
+		vv := str.Urldecoder(v)
+		res[kk] = vv
+	}
+	return res
 }

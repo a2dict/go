@@ -1,8 +1,10 @@
 package str
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"time"
 )
 
@@ -14,6 +16,9 @@ var NotEmptyFilter StringFilter = func(s string) bool { return s != "" }
 
 // IdenticalMapper ...
 var IdenticalMapper StringMapper = func(s string) string { return s }
+
+var Urlencoder StringMapper = url.QueryEscape
+var Urldecoder StringMapper = func(s string) string { return MustReturn(url.QueryUnescape(s)) }
 
 // ContainStringFilter ...
 func ContainStringFilter(strs ...string) StringFilter {
@@ -64,4 +69,28 @@ func Purify(v interface{}) string {
 func JsonStr(v interface{}) string {
 	bs, _ := json.Marshal(v)
 	return string(bs)
+}
+
+func Join(delimiter string, elements ...string) string {
+	var buffer bytes.Buffer
+	prepend := ""
+	for _, ele := range elements {
+		buffer.WriteString(prepend)
+		buffer.WriteString(ele)
+		prepend = delimiter
+	}
+	return buffer.String()
+}
+
+// TransString map []string to []string
+func TransString(mapper StringMapper, vs ...string) []string {
+	res := make([]string, 0, len(vs))
+	for _, v := range vs {
+		res = append(res, mapper(v))
+	}
+	return res
+}
+
+func MustReturn(res string, _ error) string {
+	return res
 }
