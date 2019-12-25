@@ -117,6 +117,14 @@ func NewDo(do DoFn) Task {
 	}
 }
 
+// NewDoWithFallback ...
+func NewDoWithFallback(do DoFn, fallback FallbackFn) Task {
+	return Task{
+		do:       do,
+		fallback: fallback,
+	}
+}
+
 // TryTask 执行任务
 func TryTask(task Task) error {
 	return Try(task.do, task.fallback, task.finalize)
