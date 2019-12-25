@@ -69,7 +69,7 @@ func TestTryTasks(t *testing.T) {
 		fmt.Println("task4 finalize SHOULD NOT run")
 	})
 
-	err := TryTasks(task1, task2, task3, task4)
+	err := TryTask(task1.Then(task2).Then(task3).Then(task4))
 	fmt.Println(err)
 }
 
@@ -93,7 +93,6 @@ func TestTask_Then(t *testing.T) {
 	})
 	task3 := NewTask(func() error {
 		fmt.Println("task3 do")
-		//return errors.New("task3 err")
 		return nil
 	}, func(err error) {
 		fmt.Println("task3 failback err:", err)
@@ -104,4 +103,27 @@ func TestTask_Then(t *testing.T) {
 	tt := task1.Then(task2)
 	tt = tt.Then(task3)
 	TryTask(tt)
+}
+
+func TestChainTask(t *testing.T) {
+	err := NewDo(func() error {
+		fmt.Println("task 1")
+		return nil
+	}).ThenDo(func() error {
+		fmt.Println("task 2")
+		return nil
+	}).ThenDoWithFallback(func() error {
+		fmt.Println("task 3")
+		return errors.New("task3 err")
+	}, func(err error) {
+		fmt.Println("task 3 fallback", err)
+	}).ThenDo(func() error {
+		fmt.Println("task 4")
+		return nil
+	}).OnErr(func(err error) {
+		fmt.Println("onErr. some err happened.", err)
+	}).Finally(func() {
+		fmt.Println("finally")
+	}).Do()
+	fmt.Println(err)
 }

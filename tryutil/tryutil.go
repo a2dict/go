@@ -53,6 +53,54 @@ func (pre Task) Then(task Task) Task {
 	}
 }
 
+// ThenDo ...
+func (pre Task) ThenDo(do DoFn) Task {
+	return pre.Then(Task{do: do})
+}
+
+// ThenDoWithFallback ...
+func (pre Task) ThenDoWithFallback(do DoFn, fallback FallbackFn) Task {
+	return pre.Then(Task{
+		do:       do,
+		fallback: fallback,
+	})
+}
+
+// OnErr ...
+func (pre Task) OnErr(fn FallbackFn) Task {
+	fallback := func(err error) {
+		if pre.fallback != nil {
+			pre.fallback(err)
+		}
+		fn(err)
+	}
+	return Task{
+		do:       pre.do,
+		fallback: fallback,
+		finalize: pre.finalize,
+	}
+}
+
+// Finally ...
+func (pre Task) Finally(fn FinalizeFn) Task {
+	finalize := func() {
+		if pre.finalize != nil {
+			pre.finalize()
+		}
+		fn()
+	}
+	return Task{
+		do:       pre.do,
+		fallback: pre.fallback,
+		finalize: finalize,
+	}
+}
+
+// Do ...
+func (pre Task) Do() error {
+	return Try(pre.do, pre.fallback, pre.finalize)
+}
+
 // NewTask 创建Task
 func NewTask(do DoFn, fallback FallbackFn, finalize FinalizeFn) Task {
 	return Task{
@@ -62,26 +110,16 @@ func NewTask(do DoFn, fallback FallbackFn, finalize FinalizeFn) Task {
 	}
 }
 
+// NewDo ...
+func NewDo(do DoFn) Task {
+	return Task{
+		do: do,
+	}
+}
+
 // TryTask 执行任务
 func TryTask(task Task) error {
 	return Try(task.do, task.fallback, task.finalize)
-}
-
-// TryTasks 链式执行任务
-func TryTasks(tasks ...Task) error {
-	tasksLen := len(tasks)
-	if tasksLen == 0 {
-		return nil
-	}
-	if tasksLen == 1 {
-		return TryTask(tasks[0])
-	}
-
-	t := tasks[0]
-	for i := 1; i < tasksLen; i++ {
-		t = t.Then(tasks[i])
-	}
-	return TryTask(t)
 }
 
 // Try ...
