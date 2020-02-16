@@ -2,6 +2,7 @@ package str
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -93,4 +94,12 @@ func TransString(mapper StringMapper, vs ...string) []string {
 
 func MustReturn(res string, _ error) string {
 	return res
+}
+
+// Md5 ...
+func Md5(content string) string {
+	h := md5.New()
+	h.Write([]byte(content))
+	bs := h.Sum(nil)
+	return fmt.Sprintf("%x", bs)
 }
