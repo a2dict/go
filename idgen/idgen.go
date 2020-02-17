@@ -3,6 +3,7 @@ package idgen
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"hash/fnv"
 	"os"
 	"sync/atomic"
@@ -25,15 +26,11 @@ var (
 
 // New return a id generator
 // pre should be 2-bytes length
-// generation rule: base36(pre[2bytes] + timestamp[4bytes] + hostHash[2bytes] + index[2bytes])
-func New(pre []byte) Generator {
-	if len(pre) != 2 {
-		panic("pre should be 2-bytes length")
-	}
+// generation rule: base36(timestamp[4bytes] + hostHash[2bytes] + index[2bytes])
+func New(pre string) Generator {
 	var idx uint32
 	return func() string {
 		b := bytes.Buffer{}
-		b.Write(pre)
 		ts := time.Now().Unix()
 		b.Write(uint32ToBytes(uint32(ts)))
 		b.Write(hostHash)
@@ -42,7 +39,7 @@ func New(pre []byte) Generator {
 
 		bs := b.Bytes()
 		id := base36.EncodeBytes(bs)
-		return id
+		return fmt.Sprintf("%s_%s", pre, id)
 	}
 }
 
