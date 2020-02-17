@@ -135,7 +135,7 @@ func Map2StringSlice(m map[string]string, mp BiStringMapper) []string {
 	return res
 }
 
-func Map2UrlencodeString(m map[string]string) string {
+func Map2UrlEncodedString(m map[string]string) string {
 	return str.Join("&",
 		Map2StringSlice(
 			TransMap2(
@@ -143,7 +143,7 @@ func Map2UrlencodeString(m map[string]string) string {
 			EqJoinedBiStringMapper)...)
 }
 
-func UrlencodeString2Map(s string) map[string]string {
+func UrlEncodedString2Map(s string) map[string]string {
 	res := make(map[string]string)
 	kvs := strings.Split(s, "&")
 	for _, kv := range kvs {
