@@ -1,4 +1,4 @@
-package tryutil
+package trydo
 
 // DoFn ...
 type DoFn func() error

@@ -1,9 +1,10 @@
-package tryutil
+package trydo
 
 import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestTry(t *testing.T) {
@@ -126,4 +127,20 @@ func TestChainTask(t *testing.T) {
 		fmt.Println("finally")
 	}).Do()
 	fmt.Println(err)
+}
+
+func TestTryWithIntervals(t *testing.T) {
+	do := func() error {
+		now := time.Now()
+		fmt.Println("do...", now)
+		return errors.New("xx")
+	}
+	err := TryWithIntervals(do, 3*time.Second, 5*time.Second, 5*time.Second)
+	fmt.Println(err)
+}
+
+func TestErrNil(t *testing.T) {
+	var e error
+	fmt.Println(e)
+	fmt.Println(e == nil)
 }
