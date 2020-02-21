@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/url"
 	"time"
 )
@@ -18,7 +19,10 @@ var NotEmptyFilter StringFilter = func(s string) bool { return s != "" }
 // IdenticalMapper ...
 var IdenticalMapper StringMapper = func(s string) string { return s }
 
+// Urlencoder ...
 var Urlencoder StringMapper = url.QueryEscape
+
+// Urldecoder ...
 var Urldecoder StringMapper = func(s string) string { return MustReturn(url.QueryUnescape(s)) }
 
 // ContainStringFilter ...
@@ -72,6 +76,7 @@ func JsonStr(v interface{}) string {
 	return string(bs)
 }
 
+// Join ...
 func Join(delimiter string, elements ...string) string {
 	var buffer bytes.Buffer
 	prepend := ""
@@ -92,6 +97,7 @@ func TransString(mapper StringMapper, vs ...string) []string {
 	return res
 }
 
+// MustReturn ...
 func MustReturn(res string, _ error) string {
 	return res
 }
@@ -102,4 +108,15 @@ func Md5(content string) string {
 	h.Write([]byte(content))
 	bs := h.Sum(nil)
 	return fmt.Sprintf("%x", bs)
+}
+
+var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+// RandStrWithCharset ...
+func RandStrWithCharset(length int, charset string) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
 }

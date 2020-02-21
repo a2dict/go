@@ -9,11 +9,19 @@ import (
 	"github.com/a2dict/go/str"
 )
 
+// KVMapper ...
 type KVMapper func(k, v string) (kk, vv string)
+
+// BiStringMapper ...
 type BiStringMapper func(k, v string) string
+
+// KVSplitter ...
 type KVSplitter func(string) (k, v string)
 
+// EqJoinedBiStringMapper ...
 var EqJoinedBiStringMapper BiStringMapper = func(k, v string) string { return fmt.Sprintf("%s=%s", k, v) }
+
+// EqJoinedKVSplitter ...
 var EqJoinedKVSplitter KVSplitter = func(s string) (k, v string) {
 	sp := strings.SplitN(s, "=", 2)
 	if len(sp) == 2 {
@@ -117,6 +125,7 @@ func Map2SortString(m map[string]string) string {
 	return buffer.String()
 }
 
+// TransMap2 ...
 func TransMap2(m map[string]string, keyMapper str.StringMapper, valueMapper str.StringMapper) map[string]string {
 	res := make(map[string]string)
 	for k, v := range m {
@@ -127,6 +136,7 @@ func TransMap2(m map[string]string, keyMapper str.StringMapper, valueMapper str.
 	return res
 }
 
+// Map2StringSlice ...
 func Map2StringSlice(m map[string]string, mp BiStringMapper) []string {
 	res := make([]string, 0, len(m))
 	for k, v := range m {
@@ -135,6 +145,7 @@ func Map2StringSlice(m map[string]string, mp BiStringMapper) []string {
 	return res
 }
 
+// Map2UrlEncodedString ...
 func Map2UrlEncodedString(m map[string]string) string {
 	return str.Join("&",
 		Map2StringSlice(
@@ -143,6 +154,7 @@ func Map2UrlEncodedString(m map[string]string) string {
 			EqJoinedBiStringMapper)...)
 }
 
+// UrlEncodedString2Map ...
 func UrlEncodedString2Map(s string) map[string]string {
 	res := make(map[string]string)
 	kvs := strings.Split(s, "&")
