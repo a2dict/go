@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"hash/fnv"
+	"math/rand"
 	"os"
 	"sync/atomic"
 	"time"
@@ -23,12 +24,13 @@ func (g Generator) Next() string {
 var (
 	hostHash []byte //2-bytes
 )
+var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // New return a id generator
 // pre should be 2-bytes length
 // generation rule: base36(timestamp[4bytes] + hostHash[2bytes] + index[2bytes])
 func New(pre string) Generator {
-	var idx uint32
+	idx := seededRand.Uint32()
 	return func() string {
 		b := bytes.Buffer{}
 		ts := time.Now().Unix()
