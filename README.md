@@ -1,5 +1,3 @@
 # go-lib
 
-my go library.
-
-i hate go :)
+go library.

@@ -7,8 +7,13 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"errors"
 
 	"github.com/a2dict/go/str"
+)
+
+var (
+	ErrMalformedPem = errors.New("malformed pem")
 )
 
 // ParseBase64PKCS8PrivateKey ...
@@ -91,6 +96,9 @@ func ParsePemPKCS8PrivateKey(s string) (priv *rsa.PrivateKey, err error) {
 // ParsePemPKCS1PrivateKey ...
 func ParsePemPKCS1PrivateKey(s string) (priv *rsa.PrivateKey, err error) {
 	block, _ := pem.Decode([]byte(s))
+	if block == nil {
+		return nil, ErrMalformedPem
+	}
 	priv, err = x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, err
@@ -101,6 +109,9 @@ func ParsePemPKCS1PrivateKey(s string) (priv *rsa.PrivateKey, err error) {
 // ParsePemPKIXPublicKey ...
 func ParsePemPKIXPublicKey(s string) (pub *rsa.PublicKey, err error) {
 	block, _ := pem.Decode([]byte(s))
+	if block == nil {
+		return nil, ErrMalformedPem
+	}
 	k, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
 		return
